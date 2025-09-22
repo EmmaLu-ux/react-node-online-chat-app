@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken"
 
 const maxAge = 3 * 24 * 60 * 60 * 1000 // 3天
 const createToken = (email, userId) => {
-    return jwt.sign({ email, userId }, process.env.JWT_KEY, { expiresIn: maxAge })
+    return jwt.sign(
+        { email, userId },
+        process.env.JWT_KEY,
+        { expiresIn: Math.floor(maxAge / 1000) }
+    )
 }
 
 export const signup = async (req, res, next) => {
@@ -18,8 +22,9 @@ export const signup = async (req, res, next) => {
             createToken(email, user.id),
             {
                 maxAge,
-                secure: true, // 表示 cookie 只能通过 HTTPS 传输，防止明文泄露；如果本地开发还没走 HTTPS，浏览器不会保存这个 cookie，需要在开发环境改成 false。
-                sameSite: none, // 允许跨站请求携带这个 cookie（方便前端跨域访问），此时必须配合 secure: true 才被现代浏览器接受。
+                // httpOnly: true,
+                secure: false, // 表示 cookie 只能通过 HTTPS 传输，防止明文泄露；如果本地开发还没走 HTTPS，浏览器不会保存这个 cookie，需要在开发环境改成 false。
+                sameSite: "none", // 允许跨站请求携带这个 cookie（方便前端跨域访问），此时必须配合 secure: true 才被现代浏览器接受。
             }
         )
         return res.status(201).json({

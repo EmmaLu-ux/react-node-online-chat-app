@@ -25,7 +25,7 @@ app.use(cookieParser())
  */
 app.use(express.json())
 
-app.use("/api/signup", authRoutes)
+app.use("/api/auth", authRoutes)
 
 
 const server = app.listen(port, () => {

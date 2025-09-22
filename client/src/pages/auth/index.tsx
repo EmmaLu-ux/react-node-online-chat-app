@@ -4,15 +4,43 @@ import Background from "@/assets/background-login.webp"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { apiClient } from "@/lib/app-client"
+import { SIGNUP_ROUTE } from "@/utils/constants"
 
 const Auth = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
+  const validValues = () => {
+    if (!email.length) {
+      toast.error("请输入邮箱！")
+      return false
+    }
+    if (!password.length) {
+      toast.error("请输入密码！")
+      return false
+    }
+    if (!confirmPassword.length) {
+      toast.error("请再次输入密码！")
+      return false
+    }
+    if (password !== confirmPassword) {
+      toast.error("输入的密码不一致！")
+      return false
+    }
+    return true
+  }
+
   const handleLogin = async () => {}
 
-  const handleSignup = async () => {}
+  const handleSignup = async () => {
+    if (validValues()) {
+      const res = await apiClient.post(SIGNUP_ROUTE, { email, password })
+      console.log("res", res)
+    }
+  }
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
       <div className="h-[80vh] w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] bg-white border-2 border-white text-black/90 shadow-2xl rounded-3xl grid xl:grid-cols-2">
@@ -82,7 +110,7 @@ const Auth = () => {
                 />
                 <Input
                   placeholder="请再次输入密码"
-                  type="confirmPassword"
+                  type="password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   className="rounded-full p-5"
