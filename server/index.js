@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import mongoose from "mongoose"
+import authRoutes from "./routes/AuthRoutes.js"
 
 dotenv.config()
 
@@ -23,6 +24,9 @@ app.use(cookieParser())
  * 启用内置 JSON 解析中间件，自动把 Content-Type: application/json 的请求体解析成对象挂到 req.body，便于后续处理提交的数据。
  */
 app.use(express.json())
+
+app.use("/api/signup", authRoutes)
+
 
 const server = app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`)
