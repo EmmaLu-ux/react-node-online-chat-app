@@ -3,6 +3,8 @@ import cors from "cors"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import mongoose from "mongoose"
+import https from "https"
+import fs from "fs"
 import authRoutes from "./routes/AuthRoutes.js"
 
 dotenv.config()
@@ -10,9 +12,13 @@ dotenv.config()
 const app = express()
 const port = process.env.PORT || 3001
 const databaseURL = process.env.DATABASE_URL
+// const sslOptions = {
+//     key: fs.readFileSync(process.env.SSL_KEY_PATH),
+//     cert: fs.readFileSync(process.env.SSL_CERT_PATH)
+// }
 
 app.use(cors({
-    origin: [process.env.ORIGIN], // 允许的来源，可以有多个
+    origin: [process.env.ORIGIN_HTTP, process.env.ORIGIN_HTTPS], // 允许的来源，可以有多个
     credentials: true, // 开启凭证支持
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }))
@@ -27,10 +33,14 @@ app.use(express.json())
 
 app.use("/api/auth", authRoutes)
 
-
+// HTTP 连接
 const server = app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`)
 })
+// HTTPS 连接
+// const server = https.createServer(sslOptions, app).listen(port, () => {
+//     console.log(`Server is running on https://localhost:${port}`)
+// })
 
 mongoose.connect(databaseURL).then(() => {
     console.log(`DB connection successfully.`)
