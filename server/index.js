@@ -22,6 +22,13 @@ app.use(cors({
     credentials: true, // 开启凭证支持
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }))
+
+/**
+ * 当客户端请求 /uploads/profiles 地址时，会去 uploads/profiles 静态资源目录中去寻找资源
+ * 静态资源目录：uploads/profiles，里面的资源可以直接用 HTTP GET 访问
+ */
+app.use("/uploads/profiles", express.static("uploads/profiles"))
+
 /**
  * 加载 cookie-parser 中间件，把请求头里的 Cookie 字符串解析成对象挂到 req.cookies，方便读取或校验用户的 cookie。
  */

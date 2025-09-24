@@ -10,8 +10,8 @@ export interface AuthUserInfo {
 }
 
 export interface AuthSlice {
-  userInfo: AuthUserInfo | null | undefined
-  setUserInfo: (userInfo: AuthUserInfo | null | undefined) => void
+  userInfo: AuthUserInfo | undefined
+  setUserInfo: (userInfo: AuthUserInfo | undefined) => void
 }
 
 /**
