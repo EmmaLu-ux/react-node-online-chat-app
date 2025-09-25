@@ -16,10 +16,11 @@ const Chat = () => {
       navigate("/profile")
     }
   }, [userInfo, navigate])
+
   return (
     <div className="flex text-white h-[100vh] overflow-hidden">
       <ContactsContainer />
-      <EmptyChatContainer />
+      {/* <EmptyChatContainer /> */}
       <ChatContainer />
     </div>
   )
