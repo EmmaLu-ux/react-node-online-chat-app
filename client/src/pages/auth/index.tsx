@@ -16,6 +16,7 @@ const Auth = () => {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const { setUserInfo } = useAppStore()
+  const [tabValue, setTabValue] = useState("signup")
 
   // 校验注册表单数据
   const validSignup = () => {
@@ -78,8 +79,7 @@ const Auth = () => {
         // { withCredentials: true }
       )
       if (res.status === 201) {
-        setUserInfo(res.data.user)
-        navigate("/profile")
+        setTabValue("login")
       }
       console.log("res", res)
     }
@@ -104,7 +104,10 @@ const Auth = () => {
           </div>
           {/* 表单部分 */}
           <div className="flex items-center justify-center w-full">
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs
+              value={tabValue}
+              onValueChange={setTabValue}
+              className="w-full">
               <TabsList className="bg-transparent rounded-none w-full">
                 <TabsTrigger
                   value="login"
