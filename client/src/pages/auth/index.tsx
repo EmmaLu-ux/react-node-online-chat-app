@@ -126,14 +126,14 @@ const Auth = () => {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="rounded-full p-5"
+                  className="rounded-full p-5 focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
                 <Input
                   placeholder="请输入密码"
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="rounded-full p-5"
+                  className="rounded-full p-5 focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
                 <Button className="rounded-full" onClick={handleLogin}>
                   登 录
@@ -145,21 +145,21 @@ const Auth = () => {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="rounded-full p-5"
+                  className="rounded-full p-5 focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
                 <Input
                   placeholder="请输入密码"
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="rounded-full p-5"
+                  className="rounded-full p-5 focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
                 <Input
                   placeholder="请再次输入密码"
                   type="password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="rounded-full p-5"
+                  className="rounded-full p-5 focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
                 <Button className="rounded-full" onClick={handleSignup}>
                   注 册

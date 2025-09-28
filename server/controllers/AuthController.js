@@ -1,7 +1,7 @@
 import { compare } from "bcrypt"
 import jwt from "jsonwebtoken"
 import User from "../models/UserModel.js"
-import multer from "multer" // 引入文件上传的包 Node.js中间件，用于处理 multipart/form-data 类型的数据。它无法处理任何非 multipart/form-data 类型的表单数据，就是没办法处理base64位的数据
+// import multer from "multer" // 引入文件上传的包 Node.js中间件，用于处理 multipart/form-data 类型的数据。它无法处理任何非 multipart/form-data 类型的表单数据，就是没办法处理base64位的数据
 import { existsSync, renameSync, unlinkSync } from "fs"
 
 
@@ -171,6 +171,19 @@ export const removeProfileImage = async (req, res, next) => {
 
         return res.status(200).json({
             message: "用户头像删除成功！"
+        })
+    } catch (error) {
+        console.log({ error })
+        return res.status(500).send('Internal Server Error')
+    }
+}
+
+export const logout = async (req, res, next) => {
+    try {
+        res.cookie("token", { maxAge: 1, secure: true, sameSite: "None" })
+
+        return res.status(200).json({
+            message: "退出登录成功！"
         })
     } catch (error) {
         console.log({ error })

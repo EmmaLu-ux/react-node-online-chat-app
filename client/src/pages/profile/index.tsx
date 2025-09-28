@@ -1,6 +1,5 @@
-import { Avatar } from "@/components/ui/avatar"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { useAppStore } from "@/store"
-import { AvatarImage } from "@radix-ui/react-avatar"
 import { type ChangeEvent, useEffect, useRef, useState } from "react"
 import { IoArrowBack } from "react-icons/io5"
 import { FaTrash, FaPlus } from "react-icons/fa"
@@ -172,7 +171,7 @@ const Profile = () => {
                 type="email"
                 disabled
                 value={userInfo?.email}
-                className="rounded-lg bg-[#2c2e3b] border-none p-6"
+                className="rounded-lg bg-[#2c2e3b] border-none p-6 focus-visible:ring-1 focus-visible:ring-offset-0"
               />
             </div>
             <div className="w-full">
@@ -181,7 +180,7 @@ const Profile = () => {
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                className="rounded-lg bg-[#2c2e3b] border-none p-6"
+                className="rounded-lg bg-[#2c2e3b] border-none p-6 focus-visible:ring-1 focus-visible:ring-offset-0"
               />
             </div>
             <div className="w-full flex gap-5">
