@@ -7,6 +7,7 @@ import https from "https"
 import fs from "fs"
 import authRoutes from "./routes/AuthRoutes.js"
 import contactsRoutes from "./routes/ContactsRoutes.js"
+import setupSocket from "./socket.js"
 
 dotenv.config()
 
@@ -50,6 +51,8 @@ const server = app.listen(port, () => {
 // const server = https.createServer(sslOptions, app).listen(port, () => {
 //     console.log(`Server is running on https://localhost:${port}`)
 // })
+
+setupSocket(server)
 
 mongoose.connect(databaseURL).then(() => {
     console.log(`DB connection successfully.`)
