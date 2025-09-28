@@ -6,6 +6,7 @@ import mongoose from "mongoose"
 import https from "https"
 import fs from "fs"
 import authRoutes from "./routes/AuthRoutes.js"
+import contactsRoutes from "./routes/ContactsRoutes.js"
 
 dotenv.config()
 
@@ -39,6 +40,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use("/api/auth", authRoutes)
+app.use("/api/contacts", contactsRoutes)
 
 // HTTP 连接
 const server = app.listen(port, () => {

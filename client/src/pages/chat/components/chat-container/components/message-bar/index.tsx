@@ -40,7 +40,7 @@ const MessageBar = () => {
         {/* 信息输入框 */}
         <input
           type="text"
-          className="border-none flex-1 p-5 bg-transparent rounded-md focus:outline-none focus:border-none"
+          className="border-none flex-1 p-5 bg-transparent rounded-md focus:outline-none focus:border-none focus-visible:ring-1 focus-visible:ring-offset-0"
           placeholder="请输入消息"
           value={message}
           onChange={e => setMessage(e.target.value)}

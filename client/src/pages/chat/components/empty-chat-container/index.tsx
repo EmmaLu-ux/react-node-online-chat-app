@@ -12,10 +12,10 @@ const EmptyChatContainer = () => {
       />
       <div className="flex flex-col items-center justify-center gap-5 text-white/80 mt-10 lg:text-4xl text-3xl transition-all duration-300 text-center">
         <h3 className="poppins-medium">
-          Hi<span className="text-purple-500"> ! </span>Welcome to React Node
-          <span className="text-purple-500"> Online </span>
-          Chatting App
-          <span className="text-purple-500">.</span>
+          欢迎使用 React Node<span className="text-purple-500"> 在线 </span>聊天
+          <span className="text-purple-500">！</span>
+          与朋友即时沟通，随时保持联系
+          <span className="text-purple-500">。</span>
         </h3>
       </div>
     </div>
