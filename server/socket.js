@@ -3,7 +3,7 @@ import { Server } from "socket.io"
 const setupSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: process.env.ORIGIN_HTTPS,
+            origin: [process.env.ORIGIN_HTTP, process.env.ORIGIN_HTTPS],
             methods: ['GET', 'POST'],
             credentials: true
         }

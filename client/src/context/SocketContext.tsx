@@ -14,11 +14,23 @@ export const SocketProvide = ({ children }) => {
   const { userInfo } = useAppStore()
 
   useEffect(() => {
+    console.log("userInfo", userInfo)
     if (userInfo) {
       socketRef.current = io(HOST, {
         withCredentials: true,
-        query: { userId: userInfo._id },
+        query: { userId: userInfo.id },
       })
+      socketRef.current.on("connect", () => {
+        console.log("已连接到Socket服务")
+      })
+      return () => {
+        socketRef.current.disconnect()
+      }
     }
   }, [userInfo])
+  return (
+    <SocketContext.Provider value={socketRef.current}>
+      {children}
+    </SocketContext.Provider>
+  )
 }
