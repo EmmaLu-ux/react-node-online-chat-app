@@ -8,6 +8,7 @@ import fs from "fs"
 import authRoutes from "./routes/AuthRoutes.js"
 import contactsRoutes from "./routes/ContactsRoutes.js"
 import setupSocket from "./socket.js"
+import messageRoutes from "./routes/MessageRoutes.js"
 
 dotenv.config()
 
@@ -42,6 +43,7 @@ app.use(express.json())
 
 app.use("/api/auth", authRoutes)
 app.use("/api/contacts", contactsRoutes)
+app.use("/api/messages", messageRoutes)
 
 // HTTP 连接
 const server = app.listen(port, () => {

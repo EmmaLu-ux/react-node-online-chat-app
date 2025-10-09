@@ -19,10 +19,13 @@ const Chat = () => {
 
   return (
     <div className="flex text-white h-[100vh] overflow-hidden">
+      {/* 左侧菜单、应用信息以及用户信息 */}
       <ContactsContainer />
       {selectedChatType === undefined ? (
+        // 空白聊天容器
         <EmptyChatContainer />
       ) : (
+        // 右侧聊天框部分
         <ChatContainer />
       )}
     </div>

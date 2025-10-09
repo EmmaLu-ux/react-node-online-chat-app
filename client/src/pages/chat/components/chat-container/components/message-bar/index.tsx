@@ -4,12 +4,35 @@ import { IoSend } from "react-icons/io5"
 import { RiEmojiStickerLine } from "react-icons/ri"
 import EmojiPicker from "emoji-picker-react"
 import type { EmojiClickData } from "emoji-picker-react"
+import { useAppStore } from "@/store"
+import { useSocket } from "@/context/use-socket"
 
 const MessageBar = () => {
   const emojiRef = useRef<HTMLDivElement | null>(null)
   const [message, setMessage] = useState("")
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
-  const handleSendMessage = async () => {}
+  const { selectedChatType, selectedChatData, userInfo } = useAppStore()
+  const socket = useSocket()
+
+  const handleSendMessage = async () => {
+    console.log("发送消息", {
+      sender: userInfo?.id,
+      recipient: selectedChatData?.id,
+      content: message,
+      messageType: "text",
+      fileUrl: undefined,
+    })
+    if (selectedChatType === "contact" && message.trim()) {
+      socket?.emit("sendMessage", {
+        sender: userInfo?.id,
+        recipient: selectedChatData?.id,
+        content: message,
+        messageType: "text",
+        fileUrl: undefined,
+      })
+      setMessage("") // 发送后清空输入框
+    }
+  }
 
   const handleAddEmoji = (emoji: EmojiClickData) => {
     setMessage(msg => msg + emoji.emoji)
@@ -68,6 +91,7 @@ const MessageBar = () => {
           ) : null}
         </div>
       </div>
+      {/* 发送按钮 */}
       <button
         className="bg-amber-300 rounded-md flex items-center justify-center p-5 hover:bg-amber-400 focus:bg-amber-400 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
         onClick={handleSendMessage}>
