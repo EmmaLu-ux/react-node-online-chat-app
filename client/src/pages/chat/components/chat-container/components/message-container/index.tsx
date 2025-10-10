@@ -18,7 +18,7 @@ const MessageContainer = () => {
 
   const renderMessages = () => {
     let lastDate: string | null = null
-    console.log("selectedChatMessage-renderMessages", selectedChatMessage)
+    // console.log("selectedChatMessage-renderMessages", selectedChatMessage)
     return selectedChatMessage.map((message, index) => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD")
       const showDate = messageDate !== lastDate
@@ -39,7 +39,7 @@ const MessageContainer = () => {
   }
 
   const renderDMMessage = (message: ChatMessage) => {
-    console.log("message", message, selectedChatData)
+    // console.log("message", message, selectedChatData)
     return (
       <div
         // 聊天框内左侧为对方消息，右侧为自己消息
