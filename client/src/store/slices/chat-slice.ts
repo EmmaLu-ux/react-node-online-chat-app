@@ -1,3 +1,4 @@
+// import { Auth } from "@/pages/auth"
 import type { StateCreator } from "zustand"
 
 import type { AuthUserInfo } from "./auth-slice"
@@ -13,10 +14,10 @@ export interface GroupChatInfo {
 }
 
 export interface ChatMessage {
-  _id: string
+  id: string
   // chatId: string
-  sender: string
-  recipient: string | string[]
+  sender: AuthUserInfo
+  recipient: AuthUserInfo
   content: string
   messageType: "text" | "file"
   fileUrl?: string
@@ -40,9 +41,10 @@ export type SelectedChatData = AuthUserInfo | GroupChatInfo
 export type SelectedChatMessage = ChatMessage[]
 
 export interface ChatSlice {
-  selectedChatType?: ChatType
-  selectedChatData?: SelectedChatData
-  selectedChatMessage: ChatMessage[]
+  selectedChatType?: ChatType // 全局状态里当前选中的会话类型，可能是联系人或群组
+  selectedChatData?: SelectedChatData // 全局状态里当前选中的会话的信息
+  selectedChatMessage: ChatMessage[] // 全局状态里当前选中的会话的消息列表
+  directMessagesContacts: AuthUserInfo[] // 全局状态里直接消息的联系人列表
   setSelectedChatType: (selectedChatType: ChatType | undefined) => void
   setSelectedChatData: (selectedChatData: SelectedChatData | undefined) => void
   setSelectedChatMessage: (
@@ -59,6 +61,7 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
   selectedChatType: undefined,
   selectedChatData: undefined,
   selectedChatMessage: [],
+  directMessagesContacts: [],
   setSelectedChatType: selectedChatType => set({ selectedChatType }),
   setSelectedChatData: selectedChatData => set({ selectedChatData }),
   setSelectedChatMessage: selectedChatMessage => set({ selectedChatMessage }),
@@ -71,6 +74,7 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
   addMessage: message => {
     const selectedChatMessage = get().selectedChatMessage
     const selectedChatType = get().selectedChatType
+    console.log("message-store-addMessage", message, selectedChatType)
 
     set({
       selectedChatMessage: [

@@ -12,7 +12,7 @@ export const searchContacts = async (req, res, next) => {
         const contacts = await User.find({
             $and: [
                 {
-                    _id: { $ne: req.userId }
+                    id: { $ne: req.userId }
                 },
                 {
                     $or:
@@ -20,6 +20,7 @@ export const searchContacts = async (req, res, next) => {
                 }
             ]
         })
+        console.log('contacts', contacts)
 
         return res.status(200).json({
             contacts

@@ -39,7 +39,7 @@ const NewDM = () => {
           { searchTerm },
           { withCredentials: true }
         )
-        // console.log("res-contacts-search", res)
+        console.log("res-contacts-search", res)
         if (res.status === 200 && res.data.contacts) {
           setSearchedContacts(res.data.contacts)
         }
@@ -54,7 +54,9 @@ const NewDM = () => {
   const selectNewContact = (contact: AuthUserInfo) => {
     setOpenNewContactModal(false)
     setSelectedChatType("contact")
-    setSelectedChatData(contact)
+    console.log("selectNewContact", contact)
+    const normalized = { ...contact }
+    setSelectedChatData(normalized)
     setSearchedContacts([])
   }
 

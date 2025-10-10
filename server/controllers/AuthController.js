@@ -6,6 +6,16 @@ import { existsSync, renameSync, unlinkSync } from "fs"
 
 
 const maxAge = 3 * 24 * 60 * 60 * 1000 // 3天
+// 根据环境动态设置 Cookie 属性：
+// - 开发环境（HTTP、本地）：secure=false, sameSite=lax（Safari/Chrome 都会在 XHR 中携带）
+// - 生产环境（HTTPS、可能跨站）：secure=true, sameSite=none（允许跨站携带）
+const isProd = process.env.NODE_ENV === "production"
+const cookieOptions = {
+    maxAge,
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+}
 const createToken = (email, userId) => {
     return jwt.sign(
         { email, userId },
@@ -22,15 +32,7 @@ export const signup = async (req, res, next) => {
         }
         const user = await User.create({ email, password })
 
-        res.cookie("token",
-            createToken(email, user.id),
-            {
-                maxAge,
-                // httpOnly: true, // TODO:
-                secure: false, // 表示 cookie 只能通过 HTTPS 传输，防止明文泄露；如果本地开发还没走 HTTPS，浏览器不会保存这个 cookie，需要在开发环境改成 false。
-                sameSite: "none", // 允许跨站请求携带这个 cookie（方便前端跨域访问），此时必须配合 secure: true 才被现代浏览器接受。
-            }
-        )
+        res.cookie("token", createToken(email, user.id), cookieOptions)
         return res.status(201).json({
             user: {
                 id: user.id,
@@ -62,15 +64,7 @@ export const login = async (req, res, next) => {
             return res.status(401).send("密码错误")
         }
 
-        res.cookie("token",
-            createToken(email, user.id),
-            {
-                maxAge,
-                // httpOnly: true, // TODO:
-                secure: true, // 表示 cookie 只能通过 HTTPS 传输，防止明文泄露；如果本地开发还没走 HTTPS，浏览器不会保存这个 cookie，需要在开发环境改成 false。
-                sameSite: "none", // 允许跨站请求携带这个 cookie（方便前端跨域访问），此时必须配合 secure: true 才被现代浏览器接受。
-            }
-        )
+        res.cookie("token", createToken(email, user.id), cookieOptions)
         return res.status(201).json({
             user: {
                 id: user.id,
@@ -180,7 +174,8 @@ export const removeProfileImage = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        res.cookie("token", { maxAge: 1, secure: true, sameSite: "None" })
+        // 清除 cookie：设置为空值并立即过期，属性需与设置时保持兼容
+        res.cookie("token", "", { ...cookieOptions, maxAge: 1 })
 
         return res.status(200).json({
             message: "退出登录成功！"

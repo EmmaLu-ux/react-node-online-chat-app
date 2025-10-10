@@ -32,10 +32,12 @@ const setupSocket = (server) => {
     const sendMessage = async (message) => {
         const senderSocketId = userSocketMap.get(message.sender)
         const recipientSocketId = userSocketMap.get(message.recipient)
+        console.log('Ids=sendMessage', senderSocketId, recipientSocketId)
 
         const createMessage = await Message.create(message)
         // populate: 填充关联字段 sender/recipient 的数据
-        const messageData = await Message.findById(createMessage._id).populate("sender", "id email username image color")
+        const messageData = await Message.findById(createMessage._id)
+            .populate("sender", "id email username image color")
             .populate("recipient", "id email username image color")
         console.log('messageData: ', messageData)
 

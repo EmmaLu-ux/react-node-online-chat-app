@@ -6,7 +6,7 @@ import moment from "moment"
 import type { ChatMessage } from "@/store/slices/chat-slice"
 
 const MessageContainer = () => {
-  const scrollRef = useRef(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   const {
     selectedChatData,
     selectedChatType,
@@ -14,13 +14,16 @@ const MessageContainer = () => {
     selectedChatMessage,
     setSelectedChatMessage,
   } = useAppStore()
+  // console.log("selectedChatData", selectedChatData)
 
   const renderMessages = () => {
     let lastDate: string | null = null
+    console.log("selectedChatMessage-renderMessages", selectedChatMessage)
     return selectedChatMessage.map((message, index) => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD")
       const showDate = messageDate !== lastDate
       lastDate = messageDate
+      // console.log("message", message)
 
       return (
         <div key={index}>
@@ -35,30 +38,37 @@ const MessageContainer = () => {
     })
   }
 
-  const renderDMMessage = (message: ChatMessage) => (
-    <div
-      className={`${
-        message.sender === selectedChatData?.id ? "text-left" : "text-right"
-      }`}>
-      {message.messageType === "text" && (
-        <div
-          className={`${
-            message.sender !== selectedChatData?.id
-              ? "bg-[#8417ff] text-[#fff]/70"
-              : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-          } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
-          {message.content}
+  const renderDMMessage = (message: ChatMessage) => {
+    console.log("message", message, selectedChatData)
+    return (
+      <div
+        // 聊天框内左侧为对方消息，右侧为自己消息
+        className={`${
+          message.sender.id === selectedChatData?.id
+            ? "text-left"
+            : "text-right"
+        }`}>
+        {message.messageType === "text" && (
+          <div
+            className={`${
+              message.sender.id !== selectedChatData?.id
+                ? "bg-[#8417ff] text-[#fff]/70"
+                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
+            } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
+            {/* 消息内容 */}
+            {message.content}
+          </div>
+        )}
+        {/* 消息发送时间 */}
+        <div className="text-xs text-gray-500">
+          {moment(message.timestamp).format("LT")}
         </div>
-      )}
-      <div className="text-xs text-gray-500">
-        {moment(message.timestamp).format("LT")}
       </div>
-    </div>
-  )
+    )
+  }
 
   useEffect(() => {
     if (scrollRef.current) {
-      // @ts-expect-error 滚动失败
       scrollRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [selectedChatMessage])
@@ -75,12 +85,17 @@ const MessageContainer = () => {
           { withCredentials: true }
         )
         console.log("res-getAllMessages", res)
+        if (res.data.messages) {
+          setSelectedChatMessage(res.data.messages)
+        }
       } catch (error) {
         console.log("getAllMessages-error", error)
       }
     }
 
-    if (selectedChatType === "contact") getAllMessages()
+    if (selectedChatData?.id) {
+      if (selectedChatType === "contact") getAllMessages()
+    }
   }, [selectedChatData, selectedChatType, setSelectedChatMessage])
 
   return (

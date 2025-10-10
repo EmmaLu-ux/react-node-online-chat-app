@@ -34,6 +34,17 @@ const userSchema = new mongoose.Schema({
 
 userSchema.index({ username: 1 }, { unique: true, sparse: true }) // 只有确实存在该字段、且值不为 null 的文档才写入索引。缺字段或值为 null 的文档会被跳过。两者组合成“稀疏唯一索引”后，就只对真实有值的记录做唯一性校验；允许多条记录缺字段或为 null，但一旦填入非空值就必须保持唯一。可以避免多个用户还没设置 username 时因为默认 null 冲突，同时在有人填写用户名时仍然保证不会重复。
 
+userSchema.set('toJSON', {
+    virtuals: true,
+    transform: (_doc, ret) => {
+        ret.id = ret._id?.toString();
+        delete ret._id;
+        delete ret.__v;
+        delete ret.password;
+        return ret;
+    },
+});
+
 userSchema.pre("save", async function (next) {
     // if (!this.isModified("password")) return next()
 

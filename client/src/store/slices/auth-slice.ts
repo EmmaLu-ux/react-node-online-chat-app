@@ -1,6 +1,7 @@
 import { type StateCreator } from "zustand"
 
 export interface AuthUserInfo {
+  // _id?: string
   id?: string
   email?: string
   username?: string
