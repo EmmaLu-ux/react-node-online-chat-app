@@ -14,6 +14,7 @@ export const LOGOUT = `${AUTH_ROUTES}/logout`
 
 export const SEARCH_CONTACTS = `${CONTACTS_ROUTES}/search`
 export const GET_CONTACTS_FOR_DM_LIST = `${CONTACTS_ROUTES}/get-contacts-for-dm`
+export const GET_ALL_CONTACTS = `${CONTACTS_ROUTES}/get-all-contacts`
 
 export const GET_ALL_MESSAGES = `${MESSAGES_ROUTES}/get-messages`
 export const UPLOAD_FILE = `${MESSAGES_ROUTES}/upload-file`
