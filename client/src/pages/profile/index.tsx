@@ -76,6 +76,18 @@ const Profile = () => {
   const handleFileInputClick = () => {
     fileInputRef.current?.click()
   }
+  /**
+   * @param event ChangeEvent<HTMLInputElement>
+   处理头像更改事件
+   1. 从事件中获取用户选择的文件
+   2. 如果文件存在，创建一个 FormData 对象并将文件附加到其中
+   3. 使用 apiClient 发送 POST 请求将文件上传到服务器
+   4. 如果上传成功，更新用户信息中的头像 URL 并显示成功提示
+   5. 使用 FileReader 读取文件内容并将其转换为数据 URL，以便在前端预览头像
+   6. 将读取到的数据 URL 设置为组件状态中的 image，以便头像立即更新显示
+   7. 如果没有选择文件，则不进行任何操作
+   8. 捕获并记录任何可能发生的错误
+   */
   const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     // console.log("handleImageChange-event", event)
     const file = event.target.files?.[0]

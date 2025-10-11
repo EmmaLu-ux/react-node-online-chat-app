@@ -5,6 +5,7 @@ import { HOST } from "@/utils/constants"
 import { getColor } from "@/lib/utils"
 import type { GroupChatInfo } from "@/store/slices/chat-slice"
 
+// NOTE: 可判别联合，根据 isGroup 属性区分 contacts 的类型
 type Props =
   | { isGroup: true; contacts: GroupChatInfo[] }
   | { isGroup?: false; contacts: AuthUserInfo[] }
@@ -20,7 +21,7 @@ const Row = ({
 }) => (
   <div
     className={`pl-10 py-2 transition-all duration-300 cursor-pointer ${
-      active ? "bg-[#8417ff] hover:bg-[#8417ff]" : "hover:bg-[#f1f1f111]"
+      active ? "bg-[#8417ff] hover:bg-[#8417ff]/60" : "hover:bg-[#f1f1f111]"
     }`}
     onClick={onClick}>
     <div className="flex gap-5 items-center justify-start text-neutral-300">
@@ -30,8 +31,12 @@ const Row = ({
 )
 
 const ContactList = (props: Props) => {
-  const { selectedChatData, setSelectedChatData, setSelectedChatType, setSelectedChatMessage } =
-    useAppStore()
+  const {
+    selectedChatData,
+    setSelectedChatData,
+    setSelectedChatType,
+    setSelectedChatMessage,
+  } = useAppStore()
 
   const isActive = (id: string) => selectedChatData?.id === id
 
@@ -54,7 +59,9 @@ const ContactList = (props: Props) => {
             key={contact.id}
             active={isActive(contact.id)}
             onClick={() => handleClick(contact, "group")}>
-            <div className="bg-[#ffffff22] h-10 w-10 items-center justify-center rounded-full">#</div>
+            <div className="bg-[#ffffff22] h-10 w-10 items-center justify-center rounded-full">
+              #
+            </div>
             <span>{contact.name}</span>
           </Row>
         ))}
@@ -78,13 +85,16 @@ const ContactList = (props: Props) => {
               />
             ) : (
               <div
-                className={`text-white uppercase h-10 w-10 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
-                  contact?.color as number
-                )}`}>
+                className={`${
+                  selectedChatData && selectedChatData.id === contact.id
+                    ? "bg-[#ffffff22] border border-white/70"
+                    : getColor(contact?.color as number)
+                } text-white uppercase h-10 w-10 text-lg border-[1px] flex items-center justify-center rounded-full`}>
                 {contact?.username?.[0] ?? contact?.email?.[0] ?? ""}
               </div>
             )}
           </Avatar>
+          <span>{contact.username ?? contact.email}</span>
         </Row>
       ))}
     </div>

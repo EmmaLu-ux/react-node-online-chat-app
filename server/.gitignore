@@ -1,3 +1,12 @@
 node_modules
 .env
 dist
+uploads/files
+uploads/profiles
+
+.DS_Store
+npm-debug.log
+yarn-error.log
+.vscode
+.idea
+coverage

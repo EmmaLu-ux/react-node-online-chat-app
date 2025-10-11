@@ -74,9 +74,16 @@ export default defineConfig([
 
 
 
+```javascript
+const cookieOptions = {
+    maxAge,
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+}
+```
 
-
-
+##### 说明：
 
 `sameSite`：
 
@@ -99,6 +106,60 @@ export default defineConfig([
 >
 > - 开发模式（HTTP、本机 localhost）：`httpOnly: true, sameSite: "lax", secure: false`
 > - 生产模式（HTTPS、跨站需要携带 Cookie）：`httpOnly: true, sameSite: "none", secure: true`
+
+
+
+
+
+---
+
+### 联合类型
+
+
+
+```typescript
+// NOTE: 可判别联合，根据 isGroup 属性区分 contacts 的类型
+type Props =
+  | { isGroup: true; contacts: GroupChatInfo[] }
+  | { isGroup?: false; contacts: AuthUserInfo[] }
+```
+
+##### 说明：
+
+这里的竖线是 TypeScript 的联合类型运算符 `|`，不是 JavaScript 的逻辑或 `||`。之所以看到两条，是因为把联合类型的两个分支分行书写，每行前面各写一个 `|`，更易读。
+
+这是典型的**可判别联合类型**，用布尔字面量属性`isGroup`作为判别字段。
+
+- 当 `isGroup` 为 `true` 时，`contacts` 一定是 `GroupChatInfo[]`。
+- 当 `isGroup` 为 `false` 或未传时（因为是可选 `?`），`contacts` 一定是 `AuthUserInfo[]`。
+
+- 可选让你在“个人联系人列表”的场景下可以不传 `isGroup`，默认走非群组分支；若传则必须为 `false`。
+
+> 判别联合的核心用途是为“多变体数据”建模，并让 TypeScript在分支中进行类型收窄；但它不止于收窄，还能做穷尽性检查、表达不可能状态为不可能。
+
+**可判别联合类型**属于联合类型的一种使用模式，本质上是“带标签的联合类型”。其他还有：
+
+- 原始联合：`string | number | boolean`
+- 字面量联合：`'online' | 'offline' | 'busy'`（常用来做状态/枚举）
+- 可空联合；`T | null | undefined`（可选值/空值）
+- 对象/接口联合：`{a: number} | {b: string}`（需先收窄再访问属性）
+- 可判别联合：带标签字段的对象联合，如`{type: 'group', ...} | {type: 'user', ...}`
+- 函数类型联合：`((x:string) => void) | ((x: number) => void)`（通常不能直接调用，需先收窄）
+- 数组/元祖联合：
+  - `string[] | number[]`与`(string | number)[]`不同
+  - 元祖联合：`[number, string] | [string, number]`
+- 枚举字面量联合：`Enum.A | Enum.B`或仅枚举成员的字面量类型
+- 键名联合：`keyof T`得到属性名的联合，常配合`Record<K,V>`
+- 泛型中的联合：`Array<T | U>` vs `Array<T> | Array<U>`行为不同
+- 条件类型与联合的分发：`T extends X ? A : B`会对联合的每个成员分发判断
+
+收窄手段：
+
+- `typeof`、`instanceof`、`in`检查
+- 字面量比较：`if(x.type === 'group')`
+- 用户自定义类型保护：`function isGroup(x: Props): x is GroupProps{...}`
+
+
 
 
 
