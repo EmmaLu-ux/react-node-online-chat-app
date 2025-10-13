@@ -31,7 +31,7 @@ const Row = ({
 )
 
 const ContactList = (props: Props) => {
-  console.log("props", props)
+  // console.log("props", props)
   const {
     selectedChatData,
     setSelectedChatData,

@@ -20,14 +20,15 @@ export interface ChatMessage {
   id: string
   // chatId: string
   sender: AuthUserInfo | string
-  recipient: AuthUserInfo | string
+  recipient?: AuthUserInfo | string
   content: string
   messageType: "text" | "file"
   fileUrl?: string
   // createdAt: string
   // updatedAt?: string
   // status?: "sending" | "sent" | "delivered" | "seen"
-  timestamp: string
+  timestamp?: string
+  groupId?: string
 }
 
 export type SelectedChatData = AuthUserInfo | GroupChatInfo
@@ -89,7 +90,7 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
       selectedChatData: undefined,
       selectedChatMessage: [],
     }),
-  addMessage: message => {
+  addMessage: (message: ChatMessage) => {
     const selectedChatMessage = get().selectedChatMessage
     const selectedChatType = get().selectedChatType
     console.log("message-store-addMessage", message, selectedChatType)
@@ -100,11 +101,11 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
         {
           ...message,
           recipient:
-            selectedChatType === "contact"
+            selectedChatType === "group"
               ? message.recipient
-              : message.recipient.id,
+              : message?.recipient?.id,
           sender:
-            selectedChatType === "contact" ? message.sender : message.sender.id,
+            selectedChatType === "group" ? message.sender : message.sender.id,
         },
       ],
     })

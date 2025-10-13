@@ -13,7 +13,7 @@ const MessageContainer = () => {
   const {
     selectedChatData,
     selectedChatType,
-    // userInfo,
+    userInfo,
     selectedChatMessage,
     setSelectedChatMessage,
     setIsDownloading,
@@ -69,12 +69,13 @@ const MessageContainer = () => {
   }
   const renderMessages = () => {
     let lastDate: string | null = null
-    // console.log("selectedChatMessage-renderMessages", selectedChatMessage)
+    console.log("selectedChatMessage-renderMessages", selectedChatMessage)
     return selectedChatMessage.map((message, index) => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD")
       const showDate = messageDate !== lastDate
       lastDate = messageDate
       // console.log("message", message)
+      console.log("selectedChatType", selectedChatType)
 
       return (
         <div key={index}>
@@ -84,6 +85,7 @@ const MessageContainer = () => {
             </div>
           )}
           {selectedChatType === "contact" && renderDMMessage(message)}
+          {selectedChatType === "group" && renderGroupMessage(message)}
         </div>
       )
     })
@@ -156,6 +158,28 @@ const MessageContainer = () => {
     )
   }
 
+  const renderGroupMessage = (message: ChatMessage) => {
+    console.log("message-renderGroupMessage", message, userInfo)
+    return (
+      <div
+        className={`mt-5 ${
+          message.sender.id !== userInfo.id ? "text-left" : "text-right"
+        }`}>
+        {message.messageType === "text" && (
+          <div
+            className={`${
+              message.sender.id === userInfo?.id
+                ? "bg-[#8417ff] text-[#fff]/70"
+                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
+            } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
+            {/* 消息内容 */}
+            {message.content}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" })
@@ -164,7 +188,7 @@ const MessageContainer = () => {
 
   useEffect(() => {
     const getAllMessages = async () => {
-      console.log("selectedChatData", selectedChatData)
+      // console.log("selectedChatData-useEffect", selectedChatData)
       try {
         const res = await apiClient.post(
           GET_ALL_MESSAGES,
@@ -182,8 +206,17 @@ const MessageContainer = () => {
       }
     }
 
+    // const getAllGroupMessages = async() => {
+    //   try {
+    //     const res = await apiClient.get(GET_ALL_MESSAGES)
+    //   } catch (error) {
+    //     console.log("getAllGroupMessages-error", error)
+    //   }
+    // }
+
     if (selectedChatData?.id) {
       if (selectedChatType === "contact") getAllMessages()
+      // else if (selectedChatType === "group") getAllGroupMessages()
     }
   }, [selectedChatData, selectedChatType, setSelectedChatMessage])
 

@@ -25,13 +25,7 @@ const MessageBar = () => {
   const socket = useSocket()
 
   const handleSendMessage = async () => {
-    console.log("发送消息", {
-      sender: userInfo?.id,
-      recipient: selectedChatData?.id,
-      content: message,
-      messageType: "text",
-      fileUrl: undefined,
-    })
+    console.log("selectedChatType-handleSendMessage", selectedChatType)
     if (selectedChatType === "contact" && message.trim()) {
       socket?.emit("sendMessage", {
         sender: userInfo?.id,
@@ -40,8 +34,23 @@ const MessageBar = () => {
         messageType: "text",
         fileUrl: undefined,
       })
-      setMessage("") // 发送后清空输入框
+    } else if (selectedChatType === "group" && message.trim()) {
+      socket?.emit("sendGroupMessage", {
+        sender: userInfo?.id,
+        groupId: selectedChatData?.id,
+        content: message,
+        messageType: "text",
+        fileUrl: undefined,
+      })
+      console.log("发送群消息", {
+        sender: userInfo?.id,
+        groupId: selectedChatData?.id,
+        content: message,
+        messageType: "text",
+        fileUrl: undefined,
+      })
     }
+    setMessage("") // 发送后清空输入框
   }
 
   const handleAttachmentClick = () => {
@@ -84,6 +93,14 @@ const MessageBar = () => {
             socket?.emit("sendMessage", {
               sender: userInfo?.id,
               recipient: selectedChatData?.id,
+              content: undefined,
+              messageType: "file",
+              fileUrl: res.data.filePath,
+            })
+          } else if (selectedChatType === "group") {
+            socket?.emit("sendGroupMessage", {
+              sender: userInfo?.id,
+              groupId: selectedChatData?.id,
               content: undefined,
               messageType: "file",
               fileUrl: res.data.filePath,

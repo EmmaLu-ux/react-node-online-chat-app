@@ -6,7 +6,7 @@ import type { Socket } from "socket.io-client"
 import { useAppStore } from "@/store"
 import { HOST } from "@/utils/constants"
 import { SocketContext } from "./use-socket"
-import type { MessageInfo } from "@/store/slices/chat-slice"
+import type { ChatMessage } from "@/store/slices/chat-slice"
 
 export const SocketProvide = ({ children }: { children: ReactNode }) => {
   const socketRef = useRef<Socket | null>(null)
@@ -23,7 +23,7 @@ export const SocketProvide = ({ children }: { children: ReactNode }) => {
       socketRef.current.on("connect", () => {
         console.log("已连接到Socket服务", socketRef.current?.id)
       })
-      const handleReceiveMessage = (message: MessageInfo) => {
+      const handleReceiveMessage = (message: ChatMessage) => {
         const { selectedChatData, selectedChatType, addMessage } =
           useAppStore.getState()
 
@@ -36,7 +36,19 @@ export const SocketProvide = ({ children }: { children: ReactNode }) => {
           addMessage(message)
         }
       }
+      const handleReceiveGroupMessage = (message: ChatMessage) => {
+        const { selectedChatData, selectedChatType, addMessage } =
+          useAppStore.getState()
+
+        // 仅在当前打开的是群聊且群ID匹配时，才追加消息
+        if (selectedChatType === "group" && selectedChatData?.id === message.groupId) {
+          console.log("收到群消息", message)
+          addMessage(message)
+        }
+      }
+
       socketRef.current.on("receiveMessage", handleReceiveMessage)
+      socketRef.current.on("receiveGroupMessage", handleReceiveGroupMessage)
       return () => {
         socketRef.current?.disconnect()
       }
