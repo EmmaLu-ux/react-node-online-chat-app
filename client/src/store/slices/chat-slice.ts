@@ -1,4 +1,3 @@
-// import { Auth } from "@/pages/auth"
 import type { StateCreator } from "zustand"
 
 import type { AuthUserInfo } from "./auth-slice"
@@ -8,9 +7,13 @@ export type ChatType = "contact" | "group"
 export interface GroupChatInfo {
   id: string
   name: string
+  admin: string
+  members: AuthUserInfo[]
+  messages: ChatMessage[]
+  createdAt: string
+  updatedAt: string
   image?: string
   description?: string
-  members: AuthUserInfo[]
 }
 
 export interface ChatMessage {
@@ -39,6 +42,8 @@ export interface ChatSlice {
   isDownloading: boolean
   fileUploadProgress: number
   fileDownloadProgress: number
+  groups: GroupChatInfo[]
+  setGroups: (groups: []) => void
   setFileUploadProgress: (fileUploadProgress: number) => void
   setFileDownloadProgress: (fileDownloadProgress: number) => void
   setIsUploading: (isUploading: boolean) => void
@@ -51,6 +56,7 @@ export interface ChatSlice {
   setDirectMessagesContacts: (directMessagesContacts: AuthUserInfo[]) => void
   closeChat: () => void
   addMessage: (message: ChatMessage) => void
+  addGroup: (group: GroupChatInfo) => void
 }
 
 export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
@@ -65,6 +71,8 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
   isUploading: false,
   fileUploadProgress: 0,
   fileDownloadProgress: 0,
+  groups: [],
+  setGroups: groups => set({ groups }),
   setFileUploadProgress: fileUploadProgress => set({ fileUploadProgress }),
   setFileDownloadProgress: fileDownloadProgress =>
     set({ fileDownloadProgress }),
@@ -100,5 +108,9 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
         },
       ],
     })
+  },
+  addGroup: (group: GroupChatInfo) => {
+    const groups = get().groups
+    set({ groups: [...groups, group] })
   },
 })

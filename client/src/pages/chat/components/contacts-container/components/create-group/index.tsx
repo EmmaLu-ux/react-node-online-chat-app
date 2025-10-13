@@ -1,8 +1,6 @@
 // 新建群聊的弹窗
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FaPlus } from "react-icons/fa"
-import Lottie from "react-lottie"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import {
   Tooltip,
   TooltipContent,
@@ -16,52 +14,60 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { animationDefaultOptions } from "@/lib/utils"
 import { apiClient } from "@/lib/app-client"
-import { SEARCH_CONTACTS } from "@/utils/constants"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import type { AuthUserInfo } from "@/store/slices/auth-slice"
-import { HOST } from "@/utils/constants"
-import { getColor } from "@/lib/utils"
-import { useAppStore } from "@/store"
+import { GET_ALL_CONTACTS, CREATE_GROUP } from "@/utils/constants"
 import { Button } from "@/components/ui/button"
-// import { toast } from "sonner"
+import { useAppStore } from "@/store"
+import MultipleSelector, { type Option } from "@/components/ui/multi-select"
 
 const CreateGroup = () => {
-  const { setSelectedChatType, setSelectedChatData } = useAppStore()
-  const [openNewContactModal, setOpenNewContactModal] = useState(false)
-  const [searchedContacts, setSearchedContacts] = useState([])
+  const { setSelectedChatType, setSelectedChatData, addGroup } = useAppStore()
+  const [openNewGroupModal, setOpenNewGroupModal] = useState(false)
+  // const [searchedContacts, setSearchedContacts] = useState([])
   const [groupName, setGroupName] = useState("")
+  const [allContacts, setAllContacts] = useState<Option[]>([])
+  const [selectedContacts, setSelectedContacts] = useState<Option[]>([])
+  const getData = async () => {
+    const res = await apiClient.get(GET_ALL_CONTACTS, {
+      withCredentials: true,
+    })
+    setAllContacts((res.data.contacts as Option[]) || [])
+  }
 
-  const searchContacts = async (searchTerm: string) => {
+  useEffect(() => {
+    getData()
+  }, [])
+
+  const createGroup = async () => {
+    console.log("selectedContacts", selectedContacts)
     try {
-      if (searchTerm.length > 0) {
+      if (groupName.length > 0 && selectedContacts.length > 0) {
         const res = await apiClient.post(
-          SEARCH_CONTACTS,
-          { searchTerm },
+          CREATE_GROUP,
+          {
+            name: groupName,
+            members: selectedContacts.map(contact => contact.value),
+          },
           { withCredentials: true }
         )
-        console.log("res-contacts-search", res)
-        if (res.status === 200 && res.data.contacts) {
-          setSearchedContacts(res.data.contacts)
+        console.log("res-createGroup", res)
+        if (res.status === 201) {
+          // 关闭弹窗
+          setOpenNewGroupModal(false)
+          // 清空已选择的联系人
+          setSelectedContacts([])
+          setGroupName("")
+          // 将新建的群聊添加到左侧列表中
+          addGroup(res.data.group)
+          // 选中该群聊
+          setSelectedChatType("group")
+          setSelectedChatData(res.data.group)
         }
-      } else {
-        setSearchedContacts([])
       }
     } catch (error) {
-      console.log(error)
+      console.error("创建群聊失败，请稍后重试", error)
     }
   }
-
-  const selectNewContact = (contact: AuthUserInfo) => {
-    setOpenNewContactModal(false)
-    setSelectedChatType("contact")
-    console.log("selectNewContact", contact)
-    const normalized = { ...contact }
-    setSelectedChatData(normalized)
-    setSearchedContacts([])
-  }
-  const createGroup = async () => {}
 
   return (
     <div>
@@ -69,15 +75,15 @@ const CreateGroup = () => {
         <TooltipTrigger asChild>
           <FaPlus
             className="text-neutral-400 hover:text-neutral-100 font-light opacity-90 cursor-pointer transition-all duration-300"
-            onClick={() => setOpenNewContactModal(true)}
+            onClick={() => setOpenNewGroupModal(true)}
           />
         </TooltipTrigger>
         <TooltipContent className="border-none bg-[#1c1b1e] text-white">
-          创建新聊天
+          创建新群聊
         </TooltipContent>
       </Tooltip>
-      {/* 新增联系人弹窗 */}
-      <Dialog open={openNewContactModal} onOpenChange={setOpenNewContactModal}>
+      {/* 新增群聊弹窗 */}
+      <Dialog open={openNewGroupModal} onOpenChange={setOpenNewGroupModal}>
         {/* <DialogTrigger>Open</DialogTrigger> */}
         <DialogContent className="bg-[#181920] border-none w-[400px] h-[400px] text-white flex flex-col">
           <DialogHeader>
@@ -93,7 +99,20 @@ const CreateGroup = () => {
               value={groupName}
             />
           </div>
-          <div>{/* TODO:  */}</div>
+          <div>
+            <MultipleSelector
+              defaultOptions={allContacts}
+              className="rounded-lg bg-[#2c2e3b] border-none py-2 text-white"
+              placeholder="搜索联系人"
+              value={selectedContacts}
+              onChange={setSelectedContacts}
+              emptyIndicator={
+                <p className="text-center text-lg leading-10 text-gray-600">
+                  暂无联系人
+                </p>
+              }
+            />
+          </div>
           <div>
             <Button
               className="w-full bg-purple-700/70 hover:bg-purple-700 transition-all duration-300"

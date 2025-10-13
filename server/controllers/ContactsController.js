@@ -155,10 +155,30 @@ export const getContactsForDMList = async (req, res, next) => {
     }
 }
 
+/**
+ * 获取所有可选联系人（用于前端下拉/多选控件）。
+ *
+ * 行为：
+ * - 从 `users` 集合读取除当前登录用户之外的所有用户。
+ * - 仅投影必要字段（`username`, `id`, `email`）。
+ * - 将用户映射为前端组件友好的选项结构：`{ label, value }`，
+ *   其中 `label` 优先使用 `username`，若无则回退到 `email`，`value` 为用户 `id`。
+ *
+ * 前置条件：上游认证中间件已将当前用户 ID 挂载到 `req.userId`。
+ *
+ * @param {import('express').Request} req Express 请求对象（需包含 `req.userId`）
+ * @param {import('express').Response} res Express 响应对象
+ * @param {import('express').NextFunction} next Express next 函数
+ * @returns {Promise<void>} 成功返回 `{ contacts: Array<{ label: string, value: string }> }`
+ *
+ * @example
+ * // GET /api/contacts/all
+ * // 响应: { contacts: [ { label: "Alice", value: "<userId>" }, ... ] }
+ */
 export const getAllContacts = async (req, res, next) => {
     try {
         const users = await User.find({ id: { $ne: req.userId } },
-            "username id"
+            "username id email"
         )
         const contacts = users.map(user => ({
             label: user.username ?? user.email,

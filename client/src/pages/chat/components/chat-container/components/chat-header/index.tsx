@@ -19,14 +19,15 @@ const ChatHeader = () => {
     | GroupChatInfo
     | undefined
 
-  const avatarImage = (selectedChatData as { image?: string } | undefined)?.image
+  const avatarImage = (selectedChatData as { image?: string } | undefined)
+    ?.image
 
   const colorIndex = isContact
     ? contact?.color ?? 0
     : group?.name
-      ? Array.from(group.name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
-        colors.length
-      : 0
+    ? Array.from(group.name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
+      colors.length
+    : 0
 
   const displayInitial = isContact
     ? contact?.username?.[0] ?? contact?.email?.[0] ?? ""
@@ -47,27 +48,31 @@ const ChatHeader = () => {
             // onClick={() => selectNewContact(contact)}
           >
             <div className="w-12 h-12 relative">
-              <Avatar className="w-12 h-12 rounded-full overflow-hidden">
-                {avatarImage ? (
-                  <AvatarImage
-                    src={`${HOST}/${avatarImage}`}
-                    alt="profile avatar"
-                    className="object-cover bg-black w-full h-full"
-                  />
-                ) : (
-                  <div
-                    className={`text-white uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
-                      colorIndex
-                    )}`}>
-                    {displayInitial}
-                  </div>
-                )}
-              </Avatar>
+              {selectedChatType === "contact" ? (
+                <Avatar className="w-12 h-12 rounded-full overflow-hidden">
+                  {avatarImage ? (
+                    <AvatarImage
+                      src={`${HOST}/${avatarImage}`}
+                      alt="profile avatar"
+                      className="object-cover bg-black w-full h-full"
+                    />
+                  ) : (
+                    <div
+                      className={`text-white uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
+                        colorIndex
+                      )}`}>
+                      {displayInitial}
+                    </div>
+                  )}
+                </Avatar>
+              ) : (
+                <div className="bg-[#ffffff22] h-10 w-10 flex items-center justify-center rounded-full">
+                  #
+                </div>
+              )}
             </div>
 
-            <div>
-              {displayName}
-            </div>
+            <div>{displayName}</div>
           </div>
         </div>
         <div className="flex items-center justify-center gap-5">

@@ -31,6 +31,7 @@ const Row = ({
 )
 
 const ContactList = (props: Props) => {
+  console.log("props", props)
   const {
     selectedChatData,
     setSelectedChatData,
@@ -59,7 +60,7 @@ const ContactList = (props: Props) => {
             key={contact.id}
             active={isActive(contact.id)}
             onClick={() => handleClick(contact, "group")}>
-            <div className="bg-[#ffffff22] h-10 w-10 items-center justify-center rounded-full">
+            <div className="bg-[#ffffff22] h-10 w-10 flex items-center justify-center rounded-full">
               #
             </div>
             <span>{contact.name}</span>
