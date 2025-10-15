@@ -10,10 +10,14 @@ import type { ChatMessage } from "@/store/slices/chat-slice"
 
 export const SocketProvide = ({ children }: { children: ReactNode }) => {
   const socketRef = useRef<Socket | null>(null)
-  const { userInfo } = useAppStore()
+  const { userInfo, addGroupInGroupList, addContactsInContactsList } =
+    useAppStore()
 
   useEffect(() => {
-    console.log("userInfo", userInfo)
+    console.log(
+      "🚀 ~ SocketContext.tsx:14 ~ SocketProvide ~ userInfo:",
+      userInfo
+    )
     if (userInfo) {
       socketRef.current = io(HOST, {
         withCredentials: true,
@@ -30,21 +34,26 @@ export const SocketProvide = ({ children }: { children: ReactNode }) => {
         if (
           selectedChatType !== undefined &&
           (selectedChatData?.id === message.sender.id ||
-            selectedChatData?.id === message.recipient.id)
+            selectedChatData?.id === message.recipient?.id)
         ) {
           console.log("收到消息", message)
           addMessage(message)
         }
+        if (userInfo?.id) addContactsInContactsList(message, userInfo.id)
       }
       const handleReceiveGroupMessage = (message: ChatMessage) => {
         const { selectedChatData, selectedChatType, addMessage } =
           useAppStore.getState()
 
         // 仅在当前打开的是群聊且群ID匹配时，才追加消息
-        if (selectedChatType === "group" && selectedChatData?.id === message.groupId) {
+        if (
+          selectedChatType === "group" &&
+          selectedChatData?.id === message.groupId
+        ) {
           console.log("收到群消息", message)
           addMessage(message)
         }
+        addGroupInGroupList(message)
       }
 
       socketRef.current.on("receiveMessage", handleReceiveMessage)
