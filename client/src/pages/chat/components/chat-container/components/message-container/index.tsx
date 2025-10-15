@@ -1,12 +1,15 @@
 import { apiClient } from "@/lib/app-client"
 import { useAppStore } from "@/store"
-import { GET_ALL_MESSAGES, HOST } from "@/utils/constants"
+import { GET_GROUP_MESSAGES, GET_ALL_MESSAGES, HOST } from "@/utils/constants"
 import { useEffect, useRef, useState } from "react"
 import moment from "moment"
 import type { ChatMessage } from "@/store/slices/chat-slice"
+import type { AuthUserInfo } from "@/store/slices/auth-slice"
 import { MdFolderZip } from "react-icons/md"
 import { IoMdArrowRoundDown } from "react-icons/io"
 import { IoCloseSharp } from "react-icons/io5"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getColor } from "@/lib/utils"
 
 const MessageContainer = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -67,15 +70,20 @@ const MessageContainer = () => {
       console.log("download-error", error)
     }
   }
+
+  // 类型守卫与工具：兼容 sender 为 string 或 AuthUserInfo
+  const isAuthUserInfo = (s: AuthUserInfo | string): s is AuthUserInfo =>
+    typeof s === "object" && s !== null && "id" in s
+  const getSenderId = (s: AuthUserInfo | string) =>
+    typeof s === "string" ? s : s.id
   const renderMessages = () => {
     let lastDate: string | null = null
-    console.log("selectedChatMessage-renderMessages", selectedChatMessage)
     return selectedChatMessage.map((message, index) => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD")
       const showDate = messageDate !== lastDate
       lastDate = messageDate
       // console.log("message", message)
-      console.log("selectedChatType", selectedChatType)
+      // console.log("selectedChatType", selectedChatType)
 
       return (
         <div key={index}>
@@ -91,22 +99,37 @@ const MessageContainer = () => {
     })
   }
 
+  /**
+   * 渲染一条私聊（点对点）消息。
+   *
+   * 行为说明：
+   * - 通过比较消息 `sender` 与当前对话对象 `selectedChatData?.id`，决定消息气泡左右对齐：
+   *   - 左侧：来自对方（`sender === otherId`）
+   *   - 右侧：来自自己
+   * - 根据 `message.messageType` 渲染：
+   *   - `text`：直接显示文本内容。
+   *   - `file`：若 `fileUrl` 为图片（`checkIfImage` 判断），展示缩略图并支持点击预览；否则显示文件名并提供下载按钮（`downLoadFile`）。
+   * - 底部展示消息时间（`timestamp`）。
+   *
+   * 依赖状态：`selectedChatData`、`setShowImage`、`setImageUrl`。
+   *
+   * @param message 私聊消息对象
+   * @returns JSX.Element 消息对应的 JSX 结构
+   */
   const renderDMMessage = (message: ChatMessage) => {
-    // console.log("message", message, selectedChatData)
+    console.log("message-renderDMMessage", message, selectedChatData)
+    const senderId = getSenderId(message.sender)
+    const otherId = selectedChatData?.id
     return (
       <div
         // 聊天框内左侧为对方消息，右侧为自己消息
-        className={`${
-          message.sender.id === selectedChatData?.id
-            ? "text-left"
-            : "text-right"
-        }`}>
+        className={`${senderId === otherId ? "text-left" : "text-right"}`}>
         {message.messageType === "text" && (
           <div
             className={`${
-              message.sender.id !== selectedChatData?.id
+              senderId !== otherId
                 ? "bg-[#8417ff] text-[#fff]/70"
-                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
+                : "bg-[#303030] text-white/80"
             } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
             {/* 消息内容 */}
             {message.content}
@@ -115,9 +138,9 @@ const MessageContainer = () => {
         {message.messageType === "file" && (
           <div
             className={`${
-              message.sender.id !== selectedChatData?.id
+              senderId !== otherId
                 ? "bg-[#8417ff] text-[#fff]/70"
-                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
+                : "bg-[#303030] text-white/80"
             } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
             {/* 消息内容 */}
             {checkIfImage(message.fileUrl ?? "") ? (
@@ -159,21 +182,101 @@ const MessageContainer = () => {
   }
 
   const renderGroupMessage = (message: ChatMessage) => {
-    console.log("message-renderGroupMessage", message, userInfo)
+    // console.log("message-renderGroupMessage", message, userInfo)
+    const senderId = getSenderId(message.sender)
+    const isSelf = senderId === userInfo?.id
+    const senderObj = isAuthUserInfo(message.sender)
+      ? message.sender
+      : undefined
     return (
       <div
-        className={`mt-5 ${
-          message.sender.id !== userInfo.id ? "text-left" : "text-right"
-        }`}>
+        // text-left为非本登录用户发送的消息样式
+        // text-right为本登录用户发送的消息样式
+        className={`mt-5 ${!isSelf ? "text-left" : "text-right"}`}>
+        {/* 文本消息渲染 */}
         {message.messageType === "text" && (
           <div
             className={`${
-              message.sender.id === userInfo?.id
+              isSelf
                 ? "bg-[#8417ff] text-[#fff]/70"
-                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-            } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
+                : "bg-[#303030] text-white/70"
+            } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words ml-9`}>
             {/* 消息内容 */}
             {message.content}
+          </div>
+        )}
+        {/* 文件消息渲染 */}
+        {message.messageType === "file" && (
+          <div
+            className={`${
+              isSelf
+                ? "bg-[#8417ff] text-[#fff]/70"
+                : "bg-[#2a2b33]/5 text-white/80"
+            } border-none inline-block px-4 py-2 rounded my-1 max-w-[50%] break-words`}>
+            {/* 消息内容 */}
+            {checkIfImage(message.fileUrl ?? "") ? (
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  setShowImage(true)
+                  setImageUrl(message.fileUrl)
+                }}>
+                <img
+                  src={`${HOST}/${message.fileUrl}`}
+                  height={300}
+                  width={300}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3">
+                  <MdFolderZip />
+                </span>
+                <span>{message.fileUrl?.split("/").pop()}</span>
+                <span
+                  className="bg-balck/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                  onClick={() =>
+                    message.fileUrl && downLoadFile(message.fileUrl)
+                  }>
+                  <IoMdArrowRoundDown />
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        {!isSelf ? (
+          <div className="flex items-center justify-start gap-3">
+            {/* 群聊中的头像，非当前登录用户 */}
+            <Avatar className="w-8 h-8 rounded-full overflow-hidden">
+              {/* 图片头像 */}
+              {senderObj?.image && (
+                <AvatarImage
+                  src={`${HOST}/${senderObj.image}`}
+                  alt="profile avatar"
+                  className="object-cover bg-black w-full h-full"
+                />
+              )}
+              {/* 默认头像 */}
+              <AvatarFallback
+                className={`text-white uppercase h-8 w-8 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
+                  (senderObj?.color as number) ?? 0
+                )}`}>
+                {senderObj?.username
+                  ? senderObj.username.split("").shift()
+                  : senderObj?.email.split("").shift()}
+              </AvatarFallback>
+            </Avatar>
+            {/* 用户名 */}
+            <span className="text-sm text-white/60">
+              {senderObj?.username ?? senderObj?.email}
+            </span>
+            <div className="text-xs text-white/60">
+              {moment(message.timestamp).format("LT")}
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-white/60 mt-1">
+            {moment(message.timestamp).format("LT")}
           </div>
         )}
       </div>
@@ -188,7 +291,7 @@ const MessageContainer = () => {
 
   useEffect(() => {
     const getAllMessages = async () => {
-      // console.log("selectedChatData-useEffect", selectedChatData)
+      console.log("selectedChatData-useEffect", selectedChatData)
       try {
         const res = await apiClient.post(
           GET_ALL_MESSAGES,
@@ -197,8 +300,8 @@ const MessageContainer = () => {
           },
           { withCredentials: true }
         )
-        console.log("res-getAllMessages", res)
-        if (res.data.messages) {
+        // console.log("🚀 ~ index.tsx:281 ~ getAllMessages ~ res:", res)
+        if (res.status === 200 && res.data.messages) {
           setSelectedChatMessage(res.data.messages)
         }
       } catch (error) {
@@ -206,17 +309,26 @@ const MessageContainer = () => {
       }
     }
 
-    // const getAllGroupMessages = async() => {
-    //   try {
-    //     const res = await apiClient.get(GET_ALL_MESSAGES)
-    //   } catch (error) {
-    //     console.log("getAllGroupMessages-error", error)
-    //   }
-    // }
+    const getAllGroupMessages = async () => {
+      try {
+        const res = await apiClient.get(
+          `${GET_GROUP_MESSAGES}/${selectedChatData?.id}`,
+          {
+            withCredentials: true,
+          }
+        )
+        console.log("🚀 ~ index.tsx:315 ~ getAllGroupMessages ~ res:", res)
+        if (res.status === 200 && res.data.messages) {
+          setSelectedChatMessage(res.data.messages)
+        }
+      } catch (error) {
+        console.log("getAllGroupMessages-error", error)
+      }
+    }
 
     if (selectedChatData?.id) {
       if (selectedChatType === "contact") getAllMessages()
-      // else if (selectedChatType === "group") getAllGroupMessages()
+      else if (selectedChatType === "group") getAllGroupMessages()
     }
   }, [selectedChatData, selectedChatType, setSelectedChatMessage])
 
