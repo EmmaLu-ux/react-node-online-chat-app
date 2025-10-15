@@ -19,8 +19,8 @@ export interface GroupChatInfo {
 export interface ChatMessage {
   id: string
   // chatId: string
-  sender: AuthUserInfo | string
-  recipient?: AuthUserInfo | string
+  sender: AuthUserInfo
+  recipient?: AuthUserInfo
   content: string
   messageType: "text" | "file"
   fileUrl?: string
@@ -39,25 +39,27 @@ export interface ChatSlice {
   selectedChatData?: SelectedChatData // 全局状态里当前选中的会话的信息
   selectedChatMessage: SelectedChatMessage // 全局状态里当前选中的会话的消息列表
   directMessagesContacts: AuthUserInfo[] // 全局状态里直接消息的联系人列表
-  isUploading: boolean
-  isDownloading: boolean
-  fileUploadProgress: number
-  fileDownloadProgress: number
-  groups: GroupChatInfo[]
-  setGroups: (groups: []) => void
-  setFileUploadProgress: (fileUploadProgress: number) => void
-  setFileDownloadProgress: (fileDownloadProgress: number) => void
-  setIsUploading: (isUploading: boolean) => void
-  setIsDownloading: (isDownloading: boolean) => void
-  setSelectedChatType: (selectedChatType: ChatType | undefined) => void
-  setSelectedChatData: (selectedChatData: SelectedChatData | undefined) => void
+  isUploading: boolean // 全局状态里是否正在上传文件
+  isDownloading: boolean // 全局状态里是否正在下载文件
+  fileUploadProgress: number // 全局状态里文件上传的进度
+  fileDownloadProgress: number // 全局状态里文件下载的进度
+  groups: GroupChatInfo[] // 全局状态里群组列表
+  setGroups: (groups: []) => void // 设置群组列表
+  setFileUploadProgress: (fileUploadProgress: number) => void // 设置文件上传的进度
+  setFileDownloadProgress: (fileDownloadProgress: number) => void // 设置文件下载的进度
+  setIsUploading: (isUploading: boolean) => void // 设置是否正在上传
+  setIsDownloading: (isDownloading: boolean) => void // 设置是否正在下载
+  setSelectedChatType: (selectedChatType: ChatType | undefined) => void // 设置当前选中的会话类型
+  setSelectedChatData: (selectedChatData: SelectedChatData | undefined) => void // 设置当前选中的会话的信息
   setSelectedChatMessage: (
     selectedChatMessage: SelectedChatMessage | undefined
-  ) => void
-  setDirectMessagesContacts: (directMessagesContacts: AuthUserInfo[]) => void
-  closeChat: () => void
-  addMessage: (message: ChatMessage) => void
-  addGroup: (group: GroupChatInfo) => void
+  ) => void // 设置当前选中的会话的消息
+  setDirectMessagesContacts: (directMessagesContacts: AuthUserInfo[]) => void // 设置直接消息的联系人列表
+  closeChat: () => void // 关闭会话
+  addMessage: (message: ChatMessage) => void // 添加消息
+  addGroup: (group: GroupChatInfo) => void // 添加群组
+  addGroupInGroupList: (message: ChatMessage) => void // 添加群组到群组列表
+  addContactsInContactsList: (message: ChatMessage, userId: string) => void // 添加联系人到联系人列表
 }
 
 export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
@@ -113,5 +115,38 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
   addGroup: (group: GroupChatInfo) => {
     const groups = get().groups
     set({ groups: [...groups, group] })
+  },
+  addGroupInGroupList: (message: ChatMessage) => {
+    // console.log("🚀 ~ chat-slice.ts:119 ~ createChatSlice ~ message:", message)
+
+    if (!message.groupId) return
+
+    const groups = get().groups
+    const data = groups.find(group => group.id === message.groupId)
+    const index = groups.findIndex(group => group.id === message.groupId)
+
+    if (index < 0) return
+
+    if (index !== -1 && index !== undefined) {
+      groups.splice(index, 1)
+      groups.unshift(data)
+    }
+  },
+  addContactsInContactsList: (message: ChatMessage, userId: string) => {
+    const formId =
+      message.sender.id === userId ? message.recipient?.id : message.sender.id
+    const fromData =
+      message.sender.id === userId ? message.recipient : message.sender
+
+    const dmContacts = get().directMessagesContacts
+    const data = dmContacts.find(contact => contact.id === formId)
+    const index = dmContacts.findIndex(contact => contact.id === formId)
+    if (index !== -1 && index !== undefined) {
+      dmContacts.splice(index, 1)
+      dmContacts.unshift(data)
+    } else {
+      dmContacts.unshift(fromData)
+    }
+    set({ directMessagesContacts: dmContacts })
   },
 })
