@@ -19,9 +19,6 @@ const ChatHeader = () => {
     | GroupChatInfo
     | undefined
 
-  const avatarImage = (selectedChatData as { image?: string } | undefined)
-    ?.image
-
   const colorIndex = isContact
     ? contact?.color ?? 0
     : group?.name
@@ -42,17 +39,13 @@ const ChatHeader = () => {
       <div className="flex gap-5 items-center justify-between w-full">
         {/* TODO: 聊天框标题 */}
         <div className="flex gap-3 items-center justify-center">
-          <div
-            // key={contact._id}
-            className="flex gap-3 items-center cursor-pointer"
-            // onClick={() => selectNewContact(contact)}
-          >
+          <div className="flex gap-3 items-center cursor-pointer">
             <div className="w-12 h-12 relative">
               {selectedChatType === "contact" ? (
                 <Avatar className="w-12 h-12 rounded-full overflow-hidden">
-                  {avatarImage ? (
+                  {selectedChatData?.image ? (
                     <AvatarImage
-                      src={`${HOST}/${avatarImage}`}
+                      src={`${HOST}/${selectedChatData?.image}`}
                       alt="profile avatar"
                       className="object-cover bg-black w-full h-full"
                     />

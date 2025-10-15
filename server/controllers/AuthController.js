@@ -49,6 +49,35 @@ export const signup = async (req, res, next) => {
     }
 }
 
+/**
+ * 用户登录
+ *
+ * 行为：
+ * - 校验请求体中是否包含 `email` 与 `password`。
+ * - 按 `email` 查找用户，不存在则返回 404。
+ * - 使用 bcrypt 对比明文密码与已加密密码，不匹配返回 401。
+ * - 成功后签发 JWT，并通过 `res.cookie` 设置到 httpOnly Cookie `token`（有效期 3 天，`secure`/`sameSite` 随环境调整）。
+ * - 返回已脱敏的用户信息（不包含密码）。
+ *
+ * 前置条件：
+ * - 已正确配置 `process.env.JWT_KEY`、`NODE_ENV` 与跨域相关设置。
+ *
+ * @param {import('express').Request} req Express 请求对象
+ * @param {import('express').Response} res Express 响应对象
+ * @param {import('express').NextFunction} next Express next 函数
+ * @returns {Promise<void>} 登录成功时以 201 返回 `{ user: { id, email, username, image, color, profileSetup } }`
+ *
+ * @example
+ * // POST /api/auth/login
+ * // body: { "email": "alice@example.com", "password": "secret" }
+ * // 201 响应: { user: { id, email, username, image, color, profileSetup } }
+ *
+ * @status 400 缺少 email 或 password
+ * @status 404 邮箱不存在
+ * @status 401 密码错误
+ * @status 201 登录成功并设置 Cookie
+ * @status 500 服务器内部错误
+ */
 export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body
@@ -66,14 +95,7 @@ export const login = async (req, res, next) => {
 
         res.cookie("token", createToken(email, user.id), cookieOptions)
         return res.status(201).json({
-            user: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                image: user.image,
-                color: user.color,
-                profileSetup: user.profileSetup,
-            }
+            user
         })
     } catch (error) {
         console.log({ error })
@@ -160,7 +182,7 @@ export const removeProfileImage = async (req, res, next) => {
         if (user.image && existsSync(user.image)) {
             unlinkSync(user.image) // 它会立即把指定路径上的文件从文件系统里移除，不返回任何值
         }
-        user.image = undefined
+        user.image = null
         await user.save()
 
         return res.status(200).json({
