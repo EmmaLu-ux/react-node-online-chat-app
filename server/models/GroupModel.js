@@ -53,6 +53,16 @@ groupSchema.pre("findOneAndUpdate", function (next) {
     next()
 })
 
+groupSchema.set('toJSON', {
+    virtuals: true,
+    transform: (_doc, ret) => {
+        ret.id = ret._id?.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+    },
+});
+
 const Group = mongoose.model('Group', groupSchema)
 
 export default Group
