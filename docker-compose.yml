@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: rnoca-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: rnoca-server
+    environment:
+      - PORT=8085
+      - JWT_KEY=dev_secret_change_me
+      - ORIGIN_HTTP=http://localhost:5173
+      - ORIGIN_HTTPS=
+      - DATABASE_URL=mongodb://mongo:27017/rnoca
+    ports:
+      - "8085:8085"
+    volumes:
+      - server_uploads:/app/uploads
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: rnoca-client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  server_uploads:
+
