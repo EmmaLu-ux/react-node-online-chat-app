@@ -8,6 +8,10 @@ import { HOST } from "@/utils/constants"
 import { SocketContext } from "./use-socket"
 import type { ChatMessage } from "@/store/slices/chat-slice"
 
+const getParticipantId = (
+  participant: ChatMessage["sender"] | ChatMessage["recipient"]
+) => (typeof participant === "string" ? participant : participant?.id)
+
 export const SocketProvide = ({ children }: { children: ReactNode }) => {
   const socketRef = useRef<Socket | null>(null)
   const { userInfo, addGroupInGroupList, addContactsInContactsList } =
@@ -30,11 +34,13 @@ export const SocketProvide = ({ children }: { children: ReactNode }) => {
       const handleReceiveMessage = (message: ChatMessage) => {
         const { selectedChatData, selectedChatType, addMessage } =
           useAppStore.getState()
+        const senderId = getParticipantId(message.sender)
+        const recipientId = getParticipantId(message.recipient)
 
         if (
           selectedChatType !== undefined &&
-          (selectedChatData?.id === message.sender.id ||
-            selectedChatData?.id === message.recipient?.id)
+          (selectedChatData?.id === senderId ||
+            selectedChatData?.id === recipientId)
         ) {
           console.log("收到消息", message)
           addMessage(message)

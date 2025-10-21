@@ -99,7 +99,7 @@ const Profile = () => {
       })
       console.log("handleImageChange-res", res)
       if (res.status === 201 && res.data.image) {
-        setUserInfo({ ...userInfo, image: res.data.image })
+        if (userInfo) setUserInfo({ ...userInfo, image: res.data.image })
         toast.success("用户头像更新成功！")
       }
       const reader = new FileReader()
@@ -119,7 +119,7 @@ const Profile = () => {
       })
       console.log("res", res)
       if (res.status === 200) {
-        setUserInfo({ ...userInfo, image: "" })
+        if (userInfo) setUserInfo({ ...userInfo, image: "" })
         setImage("")
         toast.success("删除成功！")
       }

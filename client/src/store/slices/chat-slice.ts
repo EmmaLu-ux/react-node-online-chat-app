@@ -19,8 +19,8 @@ export interface GroupChatInfo {
 export interface ChatMessage {
   id: string
   // chatId: string
-  sender: AuthUserInfo
-  recipient?: AuthUserInfo
+  sender: AuthUserInfo | string
+  recipient?: AuthUserInfo | string
   content: string
   messageType: "text" | "file"
   fileUrl?: string
@@ -30,6 +30,16 @@ export interface ChatMessage {
   timestamp?: string
   groupId?: string
 }
+
+const getParticipantId = (
+  participant: AuthUserInfo | string | undefined
+): string | undefined =>
+  typeof participant === "string" ? participant : participant?.id
+
+const getParticipantInfo = (
+  participant: AuthUserInfo | string | undefined
+): AuthUserInfo | undefined =>
+  typeof participant === "string" ? undefined : participant
 
 export type SelectedChatData = AuthUserInfo | GroupChatInfo
 export type SelectedChatMessage = ChatMessage[]
@@ -97,19 +107,17 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
     const selectedChatType = get().selectedChatType
     console.log("message-store-addMessage", message, selectedChatType)
 
+    const formattedMessage: ChatMessage =
+      selectedChatType === "group"
+        ? message
+        : {
+            ...message,
+            recipient: getParticipantId(message.recipient) ?? message.recipient,
+            sender: getParticipantId(message.sender) ?? message.sender,
+          }
+
     set({
-      selectedChatMessage: [
-        ...selectedChatMessage,
-        {
-          ...message,
-          recipient:
-            selectedChatType === "group"
-              ? message.recipient
-              : message?.recipient?.id,
-          sender:
-            selectedChatType === "group" ? message.sender : message.sender.id,
-        },
-      ],
+      selectedChatMessage: [...selectedChatMessage, formattedMessage],
     })
   },
   addGroup: (group: GroupChatInfo) => {
@@ -127,26 +135,32 @@ export const createChatSlice: StateCreator<ChatSlice, [], [], ChatSlice> = (
 
     if (index < 0) return
 
-    if (index !== -1 && index !== undefined) {
+    if (index !== -1 && data) {
       groups.splice(index, 1)
       groups.unshift(data)
     }
   },
   addContactsInContactsList: (message: ChatMessage, userId: string) => {
-    const formId =
-      message.sender.id === userId ? message.recipient?.id : message.sender.id
-    const fromData =
-      message.sender.id === userId ? message.recipient : message.sender
+    const senderId = getParticipantId(message.sender)
+    if (!senderId) return
+    const recipientId = getParticipantId(message.recipient)
 
-    const dmContacts = get().directMessagesContacts
-    const data = dmContacts.find(contact => contact.id === formId)
+    const formId = senderId === userId ? recipientId : senderId
+    if (!formId) return
+
+    const dmContacts = [...get().directMessagesContacts]
     const index = dmContacts.findIndex(contact => contact.id === formId)
+    const existingContact = index !== -1 ? dmContacts[index] : undefined
+
+    const participant = senderId === userId ? message.recipient : message.sender
+    const resolvedContact = getParticipantInfo(participant) ?? existingContact
+
+    if (!resolvedContact) return
+
     if (index !== -1 && index !== undefined) {
       dmContacts.splice(index, 1)
-      dmContacts.unshift(data)
-    } else {
-      dmContacts.unshift(fromData)
     }
+    dmContacts.unshift(resolvedContact)
     set({ directMessagesContacts: dmContacts })
   },
 })

@@ -2,8 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react"
 import { GrAttachment } from "react-icons/gr"
 import { IoSend } from "react-icons/io5"
 import { RiEmojiStickerLine } from "react-icons/ri"
-import EmojiPicker from "emoji-picker-react"
-import type { EmojiClickData } from "emoji-picker-react"
+import EmojiPicker, { Theme, type EmojiClickData } from "emoji-picker-react"
 import { useAppStore } from "@/store"
 import { useSocket } from "@/context/use-socket"
 import { Input } from "@/components/ui/input"
@@ -166,7 +165,7 @@ const MessageBar = () => {
           {emojiPickerOpen ? (
             <div className="absolute bottom-16 right-0">
               <EmojiPicker
-                theme="dark"
+                theme={Theme.DARK}
                 open={emojiPickerOpen}
                 onEmojiClick={handleAddEmoji}
                 autoFocusSearch={false}
