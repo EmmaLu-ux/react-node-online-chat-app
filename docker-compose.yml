@@ -8,7 +8,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    restart: unless-stopped
+    restart: unless-stopped # 手动关闭的容器不会尝试重启
 
   server:
     build:
@@ -33,7 +33,11 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        VITE_SERVER_URL: http://localhost:8085
     container_name: rnoca-client
+    environment:
+      - VITE_SERVER_URL=http://localhost:8085
     ports:
       - "5173:5173"
     depends_on:
@@ -43,4 +47,3 @@ services:
 volumes:
   mongo_data:
   server_uploads:
-
